@@ -210,6 +210,8 @@ html.lenis body {
    dark sections, breaking readability — see src/design-contract.test.ts.
    ============================================ */
 
+/* Intentionally literal, not var()-referencing --color-text-primary's hue: these are
+   fixed high-contrast overrides, not something a rebrand's accent color should touch. */
 @media (prefers-contrast: more) {
   :root {
     --color-text-secondary: oklch(0.15 0.02 55 / 0.85);
@@ -265,6 +267,10 @@ html.lenis body {
   pointer-events: none;
 }
 
+/* Gradient stops below are intermediate transition colors, not equal to any single
+   semantic token — they're structural (mid-transition tones between the dark and
+   light surfaces), not brand/accent-dependent, so they're left as literals rather
+   than forced into var() references that wouldn't be accurate anyway. */
 .section-boundary--dark-to-light {
   background: linear-gradient(
     to bottom,
@@ -313,10 +319,10 @@ html.lenis body {
 
 @keyframes navbar-solidify {
   from {
-    background-color: oklch(0.06 0.02 55 / 0);
+    background-color: color-mix(in oklch, var(--color-dark-deepest) 0%, transparent);
   }
   to {
-    background-color: oklch(0.06 0.02 55 / 0.95);
+    background-color: color-mix(in oklch, var(--color-dark-deepest) 95%, transparent);
   }
 }
 
@@ -373,7 +379,7 @@ html.lenis body {
 
   /* Navbar — transparent at top, solid on scroll (CSS scroll-driven) */
   .navbar-scroll-bg {
-    background-color: oklch(0.06 0.02 55 / 0);
+    background-color: color-mix(in oklch, var(--color-dark-deepest) 0%, transparent);
     animation-name: navbar-solidify;
     animation-duration: 1s;
     animation-timing-function: linear;
@@ -383,7 +389,7 @@ html.lenis body {
   }
 
   .navbar-solid {
-    background-color: oklch(0.06 0.02 55 / 0.95);
+    background-color: color-mix(in oklch, var(--color-dark-deepest) 95%, transparent);
   }
 
   .container-wide {
