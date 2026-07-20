@@ -1,0 +1,171 @@
+---
+/**
+ * BaseLayout.astro — root layout: <html>, <head> (SEO, fonts, global CSS), <body> wrapper.
+ * JSON-LD here covers only what's true of every site (ProfessionalService, WebSite,
+ * BreadcrumbList) — add page-specific structured data (services list, project
+ * CreativeWorks, FAQPage) at the component level once you have that content; see
+ * src/components/FAQ.astro's pattern in current56 (github.com/Dwaynor/current56)
+ * for a worked FAQPage example if you're following that reference.
+ */
+
+import { ClientRouter } from 'astro:transitions';
+import '@styles/global.css';
+import { getDictionary, localizePath } from '@/i18n/utils';
+import { defaultLang } from '@/i18n/ui';
+import { siteIdentity } from '@/config/site';
+
+interface Props {
+  title: string;
+  description?: string;
+  ogImage?: string;
+  canonicalUrl?: string;
+  googleSiteVerification?: string;
+}
+
+const locale = Astro.currentLocale ?? defaultLang;
+const t = getDictionary(locale);
+
+const {
+  title,
+  description = t.meta.defaultDescription,
+  ogImage = siteIdentity.defaultOgImage,
+  canonicalUrl,
+  googleSiteVerification = import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION,
+} = Astro.props;
+
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? 'https://www.example.com';
+const canonical = canonicalUrl ?? new URL(Astro.url.pathname, siteUrl).toString();
+
+// Reciprocal hreflang: locale counterparts of the current path.
+const dePath = localizePath(Astro.url.pathname, 'de');
+const enPath = localizePath(Astro.url.pathname, 'en');
+const deUrl = new URL(dePath, siteUrl).toString();
+const enUrl = new URL(enPath, siteUrl).toString();
+
+const ogLocale = locale === 'en' ? 'en_US' : 'de_DE';
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- SEO -->
+    <title>{title} | {siteIdentity.name}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="de" href={deUrl} />
+    <link rel="alternate" hreflang="en" href={enUrl} />
+    <link rel="alternate" hreflang="x-default" href={deUrl} />
+    {
+      googleSiteVerification && (
+        <meta name="google-site-verification" content={googleSiteVerification} />
+      )
+    }
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={`${title} | ${siteIdentity.name}`} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={`${siteUrl}${ogImage}`} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content={ogLocale} />
+    <meta property="og:site_name" content={siteIdentity.name} />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    {
+      siteIdentity.twitterHandle && (
+        <meta name="twitter:site" content={siteIdentity.twitterHandle} />
+      )
+    }
+    <meta name="twitter:title" content={`${title} | ${siteIdentity.name}`} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={`${siteUrl}${ogImage}`} />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Self-hosted font preload (critical fonts only, mono deferred) -->
+    <link
+      rel="preload"
+      href="/fonts/hanken-variable.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/bricolage-variable.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
+    <ClientRouter />
+
+    <!-- Structured Data — ProfessionalService (edit src/config/site.ts to rebrand) -->
+    <script
+      is:inline
+      type="application/ld+json"
+      set:html={JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'ProfessionalService',
+        name: siteIdentity.name,
+        founder: { '@type': 'Person', name: siteIdentity.founderName },
+        url: siteUrl,
+        logo: `${siteUrl}${siteIdentity.logoPath}`,
+        description: description,
+        address: { '@type': 'PostalAddress', ...siteIdentity.address },
+        ...(siteIdentity.vatId ? { vatID: siteIdentity.vatId } : {}),
+        areaServed: siteIdentity.areaServed,
+        sameAs: siteIdentity.sameAs,
+      })}
+    />
+
+    <script
+      is:inline
+      type="application/ld+json"
+      set:html={JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        '@id': `${siteUrl}/#website`,
+        url: siteUrl,
+        name: siteIdentity.name,
+      })}
+    />
+
+    <script
+      is:inline
+      type="application/ld+json"
+      set:html={JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: siteIdentity.name, item: siteUrl },
+          ...(Astro.url.pathname !== '/'
+            ? [{ '@type': 'ListItem', position: 2, name: title, item: canonical }]
+            : []),
+        ],
+      })}
+    />
+  </head>
+
+  <body class="min-h-screen bg-dark-deepest text-inv-primary antialiased">
+    <div class="scroll-progress-track" aria-hidden="true">
+      <div class="scroll-progress-bar"></div>
+    </div>
+
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-100 focus:bg-inv-primary focus:text-dark-deepest focus:px-4 focus:py-2 focus:font-mono focus:text-sm focus:font-medium"
+    >
+      {t.meta.skipLink}
+    </a>
+    <slot />
+  </body>
+</html>

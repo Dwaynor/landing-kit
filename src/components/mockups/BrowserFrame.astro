@@ -1,0 +1,95 @@
+---
+/**
+ * BrowserFrame.astro — minimal, sharp-edged app-window chrome.
+ * Wraps a UI mockup so it reads as a real product screen. Self-contained light
+ * "app surface" so it pops on dark sections and holds on light ones. No raster:
+ * crisp at any zoom, lazy, animatable. Reduced-motion handled globally.
+ */
+interface Props {
+  /** Address-bar label, e.g. "app.kunde.de/suche" */
+  url: string;
+  /** Optional pill on the right of the chrome, e.g. "DSGVO · EU" */
+  badge?: string;
+  /** Accessible description of what the screen shows */
+  label: string;
+}
+const { url, badge, label } = Astro.props;
+---
+
+<figure class="bf" role="img" aria-label={label}>
+  <div class="bf__chrome" aria-hidden="true">
+    <span class="bf__dots">
+      <span class="bf__dot"></span><span class="bf__dot"></span><span class="bf__dot"></span>
+    </span>
+    <span class="bf__url">{url}</span>
+    {badge && <span class="bf__badge">{badge}</span>}
+  </div>
+  <div class="bf__screen">
+    <slot />
+  </div>
+</figure>
+
+<style>
+  .bf {
+    margin: 0;
+    border: 1px solid oklch(0.15 0.02 55 / 0.16);
+    background: oklch(0.985 0.01 72);
+    overflow: hidden;
+    /* color context for the light app surface inside, independent of section */
+    color: oklch(0.15 0.02 55);
+    --bf-accent: oklch(0.42 0.15 45);
+    --bf-line: oklch(0.15 0.02 55 / 0.12);
+    --bf-muted: oklch(0.15 0.02 55 / 0.55);
+  }
+
+  .bf__chrome {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    height: 2.4rem;
+    padding-inline: 0.85rem;
+    background: oklch(0.94 0.006 55);
+    border-bottom: 1px solid var(--bf-line);
+  }
+
+  .bf__dots {
+    display: inline-flex;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+  .bf__dot {
+    width: 7px;
+    height: 7px;
+    background: oklch(0.15 0.02 55 / 0.22);
+  }
+
+  .bf__url {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--bf-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0.25rem 0.6rem;
+    background: oklch(0.985 0.01 72);
+    border: 1px solid var(--bf-line);
+  }
+
+  .bf__badge {
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--bf-accent);
+    padding: 0.2rem 0.45rem;
+    border: 1px solid oklch(0.42 0.15 45 / 0.3);
+  }
+
+  .bf__screen {
+    padding: clamp(1rem, 2.5cqi + 0.5rem, 1.75rem);
+    container-type: inline-size;
+  }
+</style>

@@ -1,0 +1,77 @@
+---
+/**
+ * Marquee.astro — CSS-only infinite text ticker
+ * Magic UI Marquee port: GPU-accelerated, zero JS, pause on hover.
+ * Duplicate content for seamless loop, aria-hidden on clone.
+ */
+
+interface Props {
+  items: string[];
+  speed?: 'slow' | 'normal' | 'fast';
+  separator?: string;
+  variant?: 'light' | 'dark';
+  reverse?: boolean;
+  ariaLabel?: string;
+}
+
+const {
+  items,
+  speed = 'normal',
+  separator = '·',
+  variant = 'dark',
+  reverse = false,
+  ariaLabel = 'Ticker',
+} = Astro.props;
+
+const durations = { slow: '45s', normal: '30s', fast: '18s' } as const;
+const duration = durations[speed];
+---
+
+<div
+  class:list={[
+    'marquee-container',
+    'py-5 border-y',
+    variant === 'dark'
+      ? 'bg-dark-deepest border-border-inv-default'
+      : 'bg-bg-primary border-border-subtle',
+  ]}
+  aria-label={ariaLabel}
+  role="marquee"
+>
+  <div
+    class:list={['marquee-track', reverse && 'marquee-track--reverse']}
+    style={`--marquee-duration: ${duration}`}
+  >
+    {/* Original content */}
+    {
+      items.map((item, i) => (
+        <span
+          class:list={[
+            'marquee-item font-mono uppercase tracking-widest',
+            variant === 'dark' ? 'text-inv-tertiary' : 'text-text-tertiary',
+          ]}
+        >
+          {item}
+          {i < items.length - 1 && <span class="marquee-separator">{separator}</span>}
+        </span>
+      ))
+    }
+
+    {/* Duplicate for seamless loop */}
+    <span aria-hidden="true" class="flex items-center">
+      {
+        items.map((item, i) => (
+          <span
+            class:list={[
+              'marquee-item font-mono uppercase tracking-widest',
+              variant === 'dark' ? 'text-inv-tertiary' : 'text-text-tertiary',
+            ]}
+          >
+            {item}
+            {i < items.length - 1 && <span class="marquee-separator">{separator}</span>}
+          </span>
+        ))
+      }
+    </span>
+  </div>
+</div>

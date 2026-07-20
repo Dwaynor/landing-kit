@@ -1,0 +1,29 @@
+---
+export const prerender = true;
+
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Navbar from '@components/Navbar.astro';
+import Footer from '@components/Footer.astro';
+import { getDictionary } from '@/i18n/utils';
+import { defaultLang, type Locale } from '@/i18n/ui';
+
+const locale = (Astro.currentLocale as Locale | undefined) ?? defaultLang;
+const t = getDictionary(locale);
+---
+
+<BaseLayout title="Home" description={t.meta.defaultDescription}>
+  <Navbar solid />
+  <main id="main-content">
+    <section
+      class="flex min-h-screen flex-col items-center justify-center gap-6 bg-dark-deepest px-6 text-center"
+      aria-labelledby="hero-heading"
+    >
+      <h1 id="hero-heading" class="max-w-3xl text-inv-primary">This is landing-kit.</h1>
+      <p class="max-w-xl text-lg text-inv-secondary">
+        Replace this page with your own — see README.md for the component catalog and the design
+        contract this starter enforces.
+      </p>
+    </section>
+  </main>
+  <Footer />
+</BaseLayout>

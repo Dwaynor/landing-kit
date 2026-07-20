@@ -1,0 +1,50 @@
+---
+/**
+ * Footer.astro — site footer. Legal/nav links are a prop, not hardcoded —
+ * this starter doesn't presume which legal pages your site has.
+ */
+import { getDictionary } from '@/i18n/utils';
+import { defaultLang, type Locale } from '@/i18n/ui';
+import { siteIdentity } from '@/config/site';
+
+export interface FooterLink {
+  label: string;
+  href: string;
+}
+
+interface Props {
+  legalLinks?: FooterLink[];
+}
+
+const { legalLinks = [] } = Astro.props;
+
+const locale = (Astro.currentLocale as Locale | undefined) ?? defaultLang;
+const t = getDictionary(locale);
+const year = new Date().getFullYear();
+---
+
+<footer class="bg-dark-deepest text-inv-primary">
+  <div
+    class="container-wide flex flex-col gap-6 py-12 sm:flex-row sm:items-center sm:justify-between"
+  >
+    <p class="font-mono text-sm text-inv-tertiary">
+      {t.footer.copyright(year)} · {siteIdentity.name}
+    </p>
+    {
+      legalLinks.length > 0 && (
+        <ul class="flex gap-6" role="list">
+          {legalLinks.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                class="text-sm font-sans text-inv-secondary interactive hover:text-inv-primary"
+              >
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </div>
+</footer>

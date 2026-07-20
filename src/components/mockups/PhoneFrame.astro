@@ -1,0 +1,110 @@
+---
+/**
+ * PhoneFrame.astro — minimal, sharp-edged mobile app-window chrome.
+ * Mobile counterpart to BrowserFrame.astro: a portrait device silhouette
+ * with a status bar instead of a browser chrome, same self-contained
+ * light "app surface" so it holds on light or dark sections.
+ */
+interface Props {
+  /** Status-bar label, e.g. app name or current screen */
+  label: string;
+  /** Optional pill in the status bar, e.g. "Lokal · Verschlüsselt" */
+  badge?: string;
+  /** Accessible description of what the screen shows */
+  a11yLabel: string;
+}
+const { label, badge, a11yLabel } = Astro.props;
+---
+
+<figure class="pf" role="img" aria-label={a11yLabel}>
+  <div class="pf__device">
+    <div class="pf__notch" aria-hidden="true"></div>
+    <div class="pf__statusbar" aria-hidden="true">
+      <span class="pf__label">{label}</span>
+      {badge && <span class="pf__badge">{badge}</span>}
+    </div>
+    <div class="pf__screen">
+      <slot />
+    </div>
+    <div class="pf__homebar" aria-hidden="true"></div>
+  </div>
+</figure>
+
+<style>
+  .pf {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  .pf__device {
+    position: relative;
+    width: min(100%, 20rem);
+    border: 1px solid oklch(0.15 0.02 55 / 0.16);
+    background: oklch(0.985 0.01 72);
+    overflow: hidden;
+    color: oklch(0.15 0.02 55);
+    --pf-accent: oklch(0.42 0.15 45);
+    --pf-line: oklch(0.15 0.02 55 / 0.12);
+    --pf-muted: oklch(0.15 0.02 55 / 0.55);
+  }
+
+  .pf__notch {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6rem;
+    height: 0.9rem;
+    background: oklch(0.15 0.02 55 / 0.9);
+    z-index: 2;
+  }
+
+  .pf__statusbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    height: 2.4rem;
+    padding-inline: 0.9rem;
+    padding-top: 0.3rem;
+    background: oklch(0.94 0.006 55);
+    border-bottom: 1px solid var(--pf-line);
+  }
+
+  .pf__label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 500;
+    color: var(--pf-muted);
+  }
+
+  .pf__badge {
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--pf-accent);
+    padding: 0.2rem 0.4rem;
+    border: 1px solid oklch(0.42 0.15 45 / 0.3);
+  }
+
+  .pf__screen {
+    padding: clamp(1rem, 4cqi + 0.5rem, 1.5rem);
+    container-type: inline-size;
+    min-height: 20rem;
+  }
+
+  .pf__homebar {
+    display: flex;
+    justify-content: center;
+    padding: 0.6rem 0;
+  }
+  .pf__homebar::after {
+    content: '';
+    width: 5rem;
+    height: 0.2rem;
+    background: oklch(0.15 0.02 55 / 0.25);
+  }
+</style>

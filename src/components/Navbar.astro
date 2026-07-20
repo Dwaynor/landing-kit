@@ -1,0 +1,191 @@
+---
+/**
+ * Navbar.astro — main navigation bar.
+ * Zero-JS Popover API navigation. Dark-transparent on hero, solid on scroll
+ * (pass solid={true} on pages with a light-background hero).
+ * Nav links are a prop, not hardcoded — this starter doesn't presume your
+ * page shape (see README's component-catalog note).
+ */
+
+import { getDictionary, localizePath } from '@/i18n/utils';
+import { defaultLang, type Locale } from '@/i18n/ui';
+import { siteIdentity } from '@/config/site';
+
+export interface NavLink {
+  label: string;
+  href: string;
+}
+
+interface Props {
+  solid?: boolean;
+  navLinks?: NavLink[];
+  ctaLabel?: string;
+  ctaHref?: string;
+}
+
+const { solid = false, navLinks = [], ctaLabel, ctaHref } = Astro.props;
+
+const locale = (Astro.currentLocale as Locale | undefined) ?? defaultLang;
+const t = getDictionary(locale);
+
+const homeHref = localizePath('/', locale);
+
+// Slug-preserving language switcher: same path, other locale prefix.
+const otherLocale = locale === 'en' ? 'de' : 'en';
+const switchHref = localizePath(Astro.url.pathname, otherLocale);
+const switchLabel = otherLocale === 'en' ? 'EN' : 'DE';
+const switchAriaLabel = otherLocale === 'en' ? 'Switch to English' : 'Auf Deutsch wechseln';
+---
+
+<header
+  class:list={[
+    'fixed top-0 left-0 right-0 z-50 border-b',
+    solid ? 'navbar-solid border-border-inv-default' : 'navbar-scroll-bg border-transparent',
+  ]}
+>
+  <nav
+    class="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-5"
+    aria-label={t.nav.ariaMainNav}
+  >
+    <a
+      href={homeHref}
+      class="inline-flex items-center min-h-11 text-2xl font-heading font-semibold tracking-tight text-inv-primary"
+      aria-label={t.nav.ariaLogo}
+    >
+      {siteIdentity.name}
+    </a>
+
+    <ul class="hidden items-center gap-10 md:flex" role="list">
+      {
+        navLinks.map((link) => (
+          <li>
+            <a
+              href={link.href}
+              class="text-sm font-sans font-medium text-inv-secondary interactive hover:text-inv-primary"
+            >
+              {link.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="hidden md:flex items-center gap-6">
+      <a
+        href={switchHref}
+        class="text-sm font-mono font-medium text-inv-tertiary interactive hover:text-inv-primary"
+        aria-label={switchAriaLabel}
+      >
+        {switchLabel}
+      </a>
+
+      {
+        ctaLabel && ctaHref && (
+          <a
+            href={ctaHref}
+            class="inline-flex bg-inv-primary px-6 py-3 text-sm font-mono font-medium text-dark-deepest interactive hover:bg-accent-on-dark"
+          >
+            {ctaLabel}
+          </a>
+        )
+      }
+    </div>
+
+    <button
+      popovertarget="mobile-menu"
+      class="inline-flex items-center justify-center p-3 min-w-11 min-h-11 text-inv-primary md:hidden interactive hover:text-accent-on-dark"
+      aria-label={t.nav.ariaMenuOpen}
+    >
+      <svg
+        class="h-6 w-6"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        aria-hidden="true"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"></path>
+      </svg>
+    </button>
+  </nav>
+
+  <div
+    id="mobile-menu"
+    popover
+    class="m-0 w-full max-w-none border-b border-border-inv-default bg-dark-deepest p-0 md:hidden"
+    role="navigation"
+  >
+    <div class="flex justify-between items-center px-6 py-5 border-b border-border-inv-default">
+      <span class="text-2xl font-heading font-semibold tracking-tight text-inv-primary">
+        {siteIdentity.name}
+      </span>
+      <button
+        popovertarget="mobile-menu"
+        popovertargetaction="hide"
+        class="p-3 min-w-11 min-h-11 text-inv-primary interactive hover:text-accent-on-dark"
+        aria-label={t.nav.ariaMenuClose}
+      >
+        <svg
+          class="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+    <ul class="flex flex-col px-6 py-4" role="list">
+      {
+        navLinks.map((link) => (
+          <li class="border-b border-border-inv-default last:border-0">
+            <a
+              href={link.href}
+              class="block py-4 min-h-11 text-lg font-sans font-medium text-inv-secondary interactive hover:text-accent-on-dark"
+              data-close-menu
+            >
+              {link.label}
+            </a>
+          </li>
+        ))
+      }
+      {
+        ctaLabel && ctaHref && (
+          <li class="mt-6 mb-4">
+            <a
+              href={ctaHref}
+              class="block bg-inv-primary px-6 py-4 min-h-11 text-center text-base font-mono font-medium text-dark-deepest interactive hover:bg-accent-on-dark"
+              data-close-menu
+            >
+              {ctaLabel}
+            </a>
+          </li>
+        )
+      }
+      <li class="pb-2">
+        <a
+          href={switchHref}
+          class="block py-3 min-h-11 text-sm font-mono font-medium text-inv-tertiary interactive hover:text-accent-on-dark"
+          aria-label={switchAriaLabel}
+          data-close-menu
+        >
+          {switchLabel}
+        </a>
+      </li>
+    </ul>
+  </div>
+</header>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const menu = document.getElementById('mobile-menu');
+    menu?.querySelectorAll('[data-close-menu]').forEach((link) => {
+      link.addEventListener('click', () => menu.hidePopover());
+    });
+  });
+</script>
